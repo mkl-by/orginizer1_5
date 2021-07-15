@@ -41,7 +41,7 @@ class AccountTests(APITestCase):    # APITestCase use APIClient instead of Djang
     #         response.json()['token']
     #     )
         self.assertEqual(len(mail.outbox), 1)
-        print('--', mail.)
+    
         # print(settings.DJOSER['ACTIVATION_URL'])
     #     # BAD CASE
     #     data['email'] = 'bad_emaild'
