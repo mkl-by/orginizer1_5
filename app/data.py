@@ -1,6 +1,7 @@
 
 def upper_country(counr):
-    return (counr.upper(), counr)
+    # return (counr.upper(), counr)
+    return (counr, counr)
 
 def choiscountry():
 
