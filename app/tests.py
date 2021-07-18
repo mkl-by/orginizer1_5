@@ -11,9 +11,13 @@ from .models import MyUser
 from .data import choiscountry
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from app.utils import pars_mail
 
 
-class AccountTests(APITestCase):    # APITestCase use APIClient instead of Django's default Client
+class AccountTests(APITestCase):
+    # APITestCase use APIClient instead of Django's default Client
+    settings.EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    settings.EMAIL_FILE_PATH = settings.BASE_DIR / 'mail_log_file'
 
     def test_register(self):
         """
@@ -29,6 +33,9 @@ class AccountTests(APITestCase):    # APITestCase use APIClient instead of Djang
         # check status msg 201
         print(response.data)
 
+        uid, token = pars_mail(settings.EMAIL_FILE_PATH)
+        print(uid, token)
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, msg=response.data)
         self.assertEqual(response.data['email'], 'test@test.test')
         self.assertEqual(response.data['country'], choiscountry()[0][0])
@@ -41,8 +48,8 @@ class AccountTests(APITestCase):    # APITestCase use APIClient instead of Djang
     #         Token.objects.get(user=user).__str__(),
     #         response.json()['token']
     #     )
-        self.assertEqual(len(mail.outbox), 1)
-        print('--', mail.)
+    #     self.assertEqual(len(mail.outbox), 1)
+
         # print(settings.DJOSER['ACTIVATION_URL'])
     #     # BAD CASE
     #     data['email'] = 'bad_emaild'
