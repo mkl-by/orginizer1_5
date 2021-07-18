@@ -28,6 +28,7 @@ class AccountTests(APITestCase):    # APITestCase use APIClient instead of Djang
         response = self.client.post('/auth/users/', data=dumps(data), content_type="application/json")
         # check status msg 201
         print(response.data)
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, msg=response.data)
         self.assertEqual(response.data['email'], 'test@test.test')
         self.assertEqual(response.data['country'], choiscountry()[0][0])
