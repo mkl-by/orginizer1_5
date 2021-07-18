@@ -34,9 +34,7 @@ class AccountTests(APITestCase):
         print(response.data)
 
         t = pars_mail(settings.EMAIL_FILE_PATH)
-        uid = t[0]
-        token = t[1]
-        print(uid, token)
+        print(t)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, msg=response.data)
         self.assertEqual(response.data['email'], 'test@test.test')
