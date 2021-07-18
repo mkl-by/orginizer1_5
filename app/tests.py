@@ -1,4 +1,3 @@
-import sys
 from json import dumps
 
 from django.test import TestCase
@@ -12,14 +11,9 @@ from .models import MyUser
 from .data import choiscountry
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from app.utils import pars_mail
 
 
-class AccountTests(APITestCase):
-    # APITestCase use APIClient instead of Django's default Client
-    settings.EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-    # settings.EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    settings.EMAIL_FILE_PATH = settings.BASE_DIR / 'mail_messages_test'
+class AccountTests(APITestCase):    # APITestCase use APIClient instead of Django's default Client
 
     def test_register(self):
         """
@@ -34,17 +28,6 @@ class AccountTests(APITestCase):
         response = self.client.post('/auth/users/', data=dumps(data), content_type="application/json")
         # check status msg 201
         print(response.data)
-
-        # uid and token in the user's letter
-        uid, token = pars_mail(settings.EMAIL_FILE_PATH)
-        data_token = {
-            'uid': uid,
-            'token': token,
-        }
-
-        response_token = self.client.post('/auth/users/activation/',
-                                          data=dumps(data_token), content_type="application/json")
-
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, msg=response.data)
         self.assertEqual(response.data['email'], 'test@test.test')
         self.assertEqual(response.data['country'], choiscountry()[0][0])
@@ -52,17 +35,14 @@ class AccountTests(APITestCase):
         user = MyUser.objects.get(id=response.data['id'])
         self.assertEqual(response.data['email'], user.email)
         self.assertEqual(response.data['country'], user.country)
-
-
-
-    # check creating token obj
+    #     # check creating token obj
     #     self.assertEqual(
     #         Token.objects.get(user=user).__str__(),
     #         response.json()['token']
     #     )
-    #    self.assertEqual(len(mail.outbox), 1)
-
-
+        self.assertEqual(len(mail.outbox), 1)
+        print('--', mail.)
+        # print(settings.DJOSER['ACTIVATION_URL'])
     #     # BAD CASE
     #     data['email'] = 'bad_emaild'
     # #     print(data)
