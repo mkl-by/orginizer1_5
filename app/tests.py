@@ -16,8 +16,10 @@ from app.utils import pars_mail
 
 class AccountTests(APITestCase):
     # APITestCase use APIClient instead of Django's default Client
-    settings.EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-    settings.EMAIL_FILE_PATH = settings.BASE_DIR / 'mail_log_file'
+    # settings.EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    # settings.EMAIL_FILE_PATH = settings.BASE_DIR / 'mail_log_file'
+
+    settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
     def test_register(self):
         """
@@ -33,9 +35,6 @@ class AccountTests(APITestCase):
         # check status msg 201
         print(response.data)
 
-        t = pars_mail(settings.EMAIL_FILE_PATH)
-        print(t)
-
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, msg=response.data)
         self.assertEqual(response.data['email'], 'test@test.test')
         self.assertEqual(response.data['country'], choiscountry()[0][0])
@@ -43,6 +42,8 @@ class AccountTests(APITestCase):
         user = MyUser.objects.get(id=response.data['id'])
         self.assertEqual(response.data['email'], user.email)
         self.assertEqual(response.data['country'], user.country)
+
+        print(pars_mail(mail.outbox[0].body))
     #     # check creating token obj
     #     self.assertEqual(
     #         Token.objects.get(user=user).__str__(),
