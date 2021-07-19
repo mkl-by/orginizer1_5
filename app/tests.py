@@ -1,6 +1,7 @@
 from json import dumps
 
-from django.test import TestCase
+# from django.test import TestCase
+from django.contrib.auth import get_user_model
 from django.core import mail
 
 from django.urls import reverse
@@ -10,7 +11,7 @@ from rest_framework.authtoken.models import Token
 from .models import MyUser
 from .data import choiscountry
 from django.conf import settings
-from django.contrib.auth import get_user_model
+# from django.contrib.auth import get_user_model
 from app.utils import pars_mail
 
 
@@ -31,10 +32,9 @@ class AccountTests(APITestCase):
             'password': 'useruser',
             'country': choiscountry()[0][0],
         }
+        # register user
         response = self.client.post('/auth/users/', data=dumps(data), content_type="application/json")
         # check status msg 201
-        print(response.data)
-
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, msg=response.data)
         self.assertEqual(response.data['email'], 'test@test.test')
         self.assertEqual(response.data['country'], choiscountry()[0][0])
@@ -43,57 +43,86 @@ class AccountTests(APITestCase):
         self.assertEqual(response.data['email'], user.email)
         self.assertEqual(response.data['country'], user.country)
 
-        print(pars_mail(mail.outbox[0].body))
-    #     # check creating token obj
-    #     self.assertEqual(
-    #         Token.objects.get(user=user).__str__(),
-    #         response.json()['token']
-    #     )
-    #     self.assertEqual(len(mail.outbox), 1)
+        # confirmation of activation by email "активируем юзера по из почты"
+        # проверили, что отправили одно сообщение
+        self.assertEqual(len(mail.outbox), 1)
 
-        # print(settings.DJOSER['ACTIVATION_URL'])
-    #     # BAD CASE
-    #     data['email'] = 'bad_emaild'
-    # #     print(data)
-    #     response = self.client.post('auth/users/', data=dumps(data), content_type="application/json")
-    # #     # check status 400
-    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, msg=response.data)
-    # #     # check user obj isn't created
-    #     self.assertEqual(MyUser.objects.filter(email=data['email']).exists(), False)
+        uid, token = pars_mail(mail.outbox[0].body)
+        data_token = {
+            'uid': uid,
+            'token': token,
+        }
 
-    # # def test_get_token(self):
-    #     """
-    #     Ensure we can get or create token
-    #     """
-    #     url = reverse('get-token')
-    #     User_model = get_user_model()   # CustomUser model
-    #     user = User_model.objects.create_user(
-    #         email='test@test.test',
-    #         password='password',
-    #         country=None
-    #     )
-    #     token = Token.objects.create(user=user)
-    #     # GOOD CASE
-    #     data = {
-    #         'email': 'test@test.test',
-    #         'password': 'password'
-    #     }
-    #     response = self.client.post(url, data=dumps(data), content_type="application/json")
-    #     # check get token
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK, msg=response.data)
-    #     self.assertEqual(response.json()['token'], token.__str__())
-    #     # check create token
-    #     token.delete()
-    #     response = self.client.post(url, data=dumps(data), content_type="application/json")
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK, msg=response.data)
-    #     self.assertEqual(
-    #         Token.objects.get(user=user).__str__(),
-    #         response.json()['token']
-    #     )
-    #     # BAD CASE
-    #     data['password'] = 'bad_password'
-    #     response = self.client.post(url, data=dumps(data), content_type="application/json")
-    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, msg=response.data)
+        response_activate = self.client.post(
+            '/auth/users/activation/',
+            data=dumps(data_token),
+            content_type="application/json"
+        )
+
+        self.assertEqual(response_activate.status_code, status.HTTP_204_NO_CONTENT, msg=response_activate.data)
+        self.assertEqual(response_activate.data, None)
+
+        # login user and return token user "логинимся и получаем в ответ токен usera"
+        data_user = {
+            'email': 'test@test.test',
+            'password': 'useruser',
+        }
+
+        response_login = self.client.post(
+            '/auth/token/login/',
+            data=dumps(data_user),
+            content_type="application/json"
+        )
+
+        self.assertEqual(response_login.status_code, status.HTTP_200_OK, msg=response_login.data)
+
+        # check token obj
+        self.assertEqual(
+            Token.objects.get(user=user).__str__(),
+            response_login.data['auth_token']
+        )
+
+        # BAD CASE
+        data['email'] = 'bad_emaild'
+        response = self.client.post('auth/users/', data=dumps(data), content_type="application/json")
+        # check status 400
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        # check user obj isn't created
+        self.assertEqual(MyUser.objects.filter(email=data['email']).exists(), False)
+
+    def test_get_token(self):
+        """ Ensure we can get or create token """
+        User_model = get_user_model()   # CustomUser model
+        user = User_model.objects.create_user(
+            email='test@test.test',
+            password='password',
+            country=choiscountry()[0][0]
+        )
+        token = Token.objects.create(user=user)
+
+        # GOOD CASE
+        data = {
+            'email': 'test@test.test',
+            'password': 'password',
+            'country': choiscountry()[0][0]
+        }
+        response = self.client.post('/auth/token/login/', data=dumps(data), content_type="application/json")
+        # check get token
+        self.assertEqual(response.status_code, status.HTTP_200_OK, msg=response.data)
+        self.assertEqual(response.data['auth_token'], token.__str__())
+        # check create token
+        token.delete()
+        response = self.client.post('/auth/token/login/', data=dumps(data), content_type="application/json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK, msg=response.data)
+        self.assertEqual(
+            Token.objects.get(user=user).__str__(),
+            response.data['auth_token']
+        )
+        # BAD CASE
+        data['password'] = 'bad_password'
+        response = self.client.post('/auth/token/login/', data=dumps(data), content_type="application/json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, msg=response.data)
+
 # class UserTestCase(APITestCase):
 #     profile_list_url = reverse('all-profiles')
 #     def setUp(self):
@@ -132,7 +161,7 @@ class AccountTests(APITestCase):
 #
 #     # заполнить профиль пользователя, который был автоматически создан с использованием сигналов
 #     def test_userprofile_profile(self):
-#         profile_data={'description':'I am a very famous game character','location':'nintendo world','is_creator':'true',}
-#         response=self.client.put(reverse('profile',kwargs={'pk':1}),data=profile_data)
-#         print(response.data)
-#         self.assertEqual(response.status_code,status.HTTP_200_OK)
+#     profile_data={'description':'I am a very famous game character','location':'nintendo world','is_creator':'true',}
+#     response=self.client.put(reverse('profile',kwargs={'pk':1}),data=profile_data)
+#     print(response.data)
+#     self.assertEqual(response.status_code,status.HTTP_200_OK)
