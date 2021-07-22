@@ -1,4 +1,14 @@
+# models HisEvent
+tiktak = (
+    (0, '-----'),
+    (1, 'За час'),
+    (2, 'За 2 часа'),
+    (4, 'За 4 часа'),
+    (24, 'За день'),
+    (168, 'За неделю'),
+)
 
+# models MyUser
 def upper_country(counr):
     # return (counr.upper(), counr)
     return (counr, counr)

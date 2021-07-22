@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
-from .data import choiscountry
+from .data import choiscountry, tiktak
 # Create your models here.
 
 
@@ -72,3 +72,16 @@ class MyUser(AbstractBaseUser):
         """Is the user a member of staff?"""
         # Simplest possible answer: All admins are staff
         return self.is_admin
+
+
+class HisEvent(models.Model):
+    """model user event"""
+    user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='user')
+    name_event = models.CharField(max_length=250)
+    remind = models.CharField(max_length=20, choices=tiktak)  # оповещение
+    data_start = models.DateTimeField()
+    data_end = models.DateTimeField()
+
+    def __str__(self):
+        return f"user {self.user.id} --> дело: {self.name_event} --> оповещать {tiktak[self.remind][1]}"
+

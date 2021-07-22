@@ -1,15 +1,19 @@
+import datetime
+import time
 from json import dumps
 
 # from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core import mail
 
-from django.urls import reverse
+# from django.urls import reverse
+from django.utils import timezone
+from pytz import tzinfo
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
-from .models import MyUser
-from .data import choiscountry
+from app.models import MyUser, HisEvent
+from app.data import choiscountry, tiktak
 from django.conf import settings
 # from django.contrib.auth import get_user_model
 from app.utils import pars_mail
@@ -92,19 +96,18 @@ class AccountTests(APITestCase):
 
     def test_get_token(self):
         """ Ensure we can get or create token """
-        User_model = get_user_model()   # CustomUser model
-        user = User_model.objects.create_user(
+        user_model = get_user_model()   # CustomUser model
+        user = user_model.objects.create_user(
             email='test@test.test',
             password='password',
             country=choiscountry()[0][0]
         )
         token = Token.objects.create(user=user)
-
         # GOOD CASE
         data = {
             'email': 'test@test.test',
             'password': 'password',
-            'country': choiscountry()[0][0]
+            # 'country': choiscountry()[0][0]
         }
         response = self.client.post('/auth/token/login/', data=dumps(data), content_type="application/json")
         # check get token
@@ -118,50 +121,29 @@ class AccountTests(APITestCase):
             Token.objects.get(user=user).__str__(),
             response.data['auth_token']
         )
+
         # BAD CASE
         data['password'] = 'bad_password'
         response = self.client.post('/auth/token/login/', data=dumps(data), content_type="application/json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, msg=response.data)
 
-# class UserTestCase(APITestCase):
-#     profile_list_url = reverse('all-profiles')
-#     def setUp(self):
-#         data = {
-#             'email': 'test@test.test',
-#             'password': 'password',
-#             'country': choiscountry()[0][0],
-#         }
-#         # создайте нового пользователя, отправив запрос к конечной точке djoser
-#         self.user=self.client.post('/auth/users/',data=data)
-#         # получить веб-токен JSON для вновь созданного пользователя
-#         response=self.client.post('/auth/jwt/create/',data={'username':'mario','password':'i-keep-jumping'})
-#         self.token=response.data['access']
-#         self.api_authentication()
-#
-#     def api_authentication(self):
-#         self.client.credentials(HTTP_AUTHORIZATION='Bearer '+self.token)
-#
-#     # получить список всех профилей пользователей во время аутентификации пользователя запроса
-#     def test_userprofile_list_authenticated(self):
-#         response=self.client.get(self.profile_list_url)
-#         self.assertEqual(response.status_code,status.HTTP_200_OK)
-#
-#     # получить список всех профилей пользователей, пока запрос пользователя не прошел проверку подлинности
-#     def test_userprofile_list_unauthenticated(self):
-#         self.client.force_authenticate(user=None)
-#         response=self.client.get(self.profile_list_url)
-#         self.assertEqual(response.status_code,status.HTTP_401_UNAUTHORIZED)
-#
-#     # проверьте, чтобы получить данные профиля аутентифицированного пользователя
-#     def test_userprofile_detail_retrieve(self):
-#         response=self.client.get(reverse('profile',kwargs={'pk':1}))
-#         # print(response.data)
-#         self.assertEqual(response.status_code,status.HTTP_200_OK)
-#
-#
-#     # заполнить профиль пользователя, который был автоматически создан с использованием сигналов
-#     def test_userprofile_profile(self):
-#     profile_data={'description':'I am a very famous game character','location':'nintendo world','is_creator':'true',}
-#     response=self.client.put(reverse('profile',kwargs={'pk':1}),data=profile_data)
-#     print(response.data)
-#     self.assertEqual(response.status_code,status.HTTP_200_OK)
+    def test_create_his_event(self):
+        """проверка модели сообщения"""
+        user = MyUser.objects.create_user('mmm@mmm.mm', choiscountry()[0][0], 'password')
+        self.assertEqual(user.email, 'mmm@mmm.mm')
+        self.assertEqual(user.country, 'Afghanistan')
+        self.assertNotEqual(user.password, 'password')
+
+        mess = HisEvent.objects.create(
+            user=user,
+            name_event='name_event',
+            data_start=datetime.datetime(2021, 7, 22, 16, 30, tzinfo=datetime.timezone.utc),
+            data_end=datetime.datetime(2021, 7, 22, 17, 0, tzinfo=datetime.timezone.utc),
+            remind=tiktak[1][0]
+        )
+        self.assertEqual(mess.id, user.id)
+        self.assertEqual(mess.name_event, 'name_event')
+        self.assertEqual(mess.remind, 1)
+
+
+
