@@ -1,3 +1,7 @@
 from django.shortcuts import render
+import tasks
 
-# Create your views here.
+
+x = tasks.add.delay(2, 3)
+print(x.get(timeout=1))
+

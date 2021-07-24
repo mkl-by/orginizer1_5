@@ -153,3 +153,15 @@ EMAIL_HOST_USER = 'askorbinkakislota@gmail.com'
 # EMAIL_HOST_PASSWORD='lrrtvrowyvwpzrci'
 # EMAIL_HOST_PASSWORD = 'rykgixonvnzghims'
 EMAIL_HOST_PASSWORD = 'darija302007'
+
+
+# redis and selery
+
+REDIS_HOST = '0.0.0.0'
+REDIS_PORT = '6379'
+CELERY_BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'  # подключаем селери к редису в докере
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
