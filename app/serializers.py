@@ -1,3 +1,5 @@
+import datetime
+from django.utils import dateparse, timezone
 from rest_framework import serializers
 from app.models import HisEvent, MyUser
 
@@ -43,6 +45,8 @@ class HisEventSerializer(serializers.ModelSerializer):
         try:
             if data['data_start'] > data['data_end']:
                 raise serializers.ValidationError("finish must occur after start")
+            if data['data_start'] < timezone.now():
+                raise serializers.ValidationError("Yesterday has already passed ")
         except KeyError:
             # if data['data_end'] KeyError
             return data
