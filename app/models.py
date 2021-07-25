@@ -1,7 +1,9 @@
+import datetime
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
+
 from .data import choiscountry, tiktak
-# Create your models here.
 
 
 class MyUserManager(BaseUserManager):
@@ -78,10 +80,15 @@ class HisEvent(models.Model):
     """model user event"""
     user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='user')
     name_event = models.CharField(max_length=250)
-    remind = models.CharField(max_length=20, choices=tiktak)  # оповещение
+    remind = models.SmallIntegerField(choices=tiktak)  # оповещение
     data_start = models.DateTimeField()
-    data_end = models.DateTimeField()
+    data_end = models.DateTimeField(blank=True)
+
+    def save(self, *args, **kwargs):
+        """if the user has not set the data_end"""
+        if self.data_end is None:
+            self.data_end = (datetime.timedelta(days=1) + self.data_start).replace(hour=0, minute=0, second=0)
+        super().save()
 
     def __str__(self):
         return f"user {self.user.id} --> дело: {self.name_event} --> оповещать {tiktak[self.remind][1]}"
-

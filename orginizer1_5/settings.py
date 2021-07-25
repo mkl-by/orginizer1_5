@@ -159,6 +159,7 @@ EMAIL_HOST_PASSWORD = 'darija302007'
 
 REDIS_HOST = '0.0.0.0'
 REDIS_PORT = '6379'
+CELERY_TIMEZONE = 'Europe/Minsk'
 CELERY_BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'  # подключаем селери к редису в докере
 CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
 CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'

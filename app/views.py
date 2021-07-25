@@ -1,7 +1,8 @@
-from django.shortcuts import render
-from app.tasks import add
+from app.models import HisEvent
+from app.serializers import HisEventSerializer
+from rest_framework.generics import ListAPIView, ListCreateAPIView
 
 
-x = add.delay(2, 3)
-print(x.get(timeout=1))
-
+class HisEventListApiView(ListCreateAPIView):
+    queryset = HisEvent.objects.all()
+    serializer_class = HisEventSerializer
