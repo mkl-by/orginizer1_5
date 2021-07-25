@@ -3,7 +3,6 @@
 Supported authentication backends
 
     Token based authentication from DRF
-    JSON Web Token authentication from django-rest-framework-simplejwt
 
 Supported Python versions
 
@@ -39,8 +38,6 @@ Available endpoints
     /users/reset_username_confirm/
     /token/login/ (Token Based Authentication)
     /token/logout/ (Token Based Authentication)
-    /jwt/create/ (JSON Web Token Authentication)
-    /jwt/refresh/ (JSON Web Token Authentication)
-    /jwt/verify/ (JSON Web Token Authentication)
+    
     
 
