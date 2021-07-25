@@ -91,4 +91,4 @@ class HisEvent(models.Model):
         super().save()
 
     def __str__(self):
-        return f"user {self.user.id} --> дело: {self.name_event} --> оповещать {tiktak[self.remind][1]}"
+        return self.name_event
