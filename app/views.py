@@ -1,7 +1,7 @@
 from django.shortcuts import render
-import tasks
+from app.tasks import add
 
 
-x = tasks.add.delay(2, 3)
+x = add.delay(2, 3)
 print(x.get(timeout=1))
 
