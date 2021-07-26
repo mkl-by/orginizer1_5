@@ -80,14 +80,18 @@ class HisEvent(models.Model):
     """model user event"""
     user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='user')
     name_event = models.CharField(max_length=250)
-    remind = models.SmallIntegerField(choices=tiktak)  # оповещение
+    remind = models.SmallIntegerField(null=True, blank=True, choices=tiktak)  # оповещение
     data_start = models.DateTimeField()
     data_end = models.DateTimeField(blank=True)
+    remind_message = models.DateTimeField(null=True, blank=True)
+    notified = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         """if the user has not set the data_end"""
         if self.data_end is None:
             self.data_end = (datetime.timedelta(days=1) + self.data_start).replace(hour=0, minute=0, second=0)
+        if self.remind:
+            self.remind_message = self.data_start - datetime.timedelta(hours=self.remind)
         super().save()
 
     def __str__(self):

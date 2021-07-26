@@ -1,7 +1,6 @@
-import datetime
-from django.utils import dateparse, timezone
+from django.utils import timezone
 from rest_framework import serializers
-from app.models import HisEvent, MyUser
+from app.models import HisEvent
 
 """
 ПАМЯТКА джуна:

@@ -2,11 +2,11 @@ import datetime
 import time
 from json import dumps
 
-# from django.test import TestCase
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core import mail
 
-# from django.urls import reverse
+from django.urls import reverse
 from django.utils import timezone
 from pytz import tzinfo
 from rest_framework import status
@@ -134,16 +134,35 @@ class AccountTests(APITestCase):
         self.assertEqual(user.country, 'Afghanistan')
         self.assertNotEqual(user.password, 'password')
 
-        mess = HisEvent.objects.create(
-            user=user,
-            name_event='name_event',
-            data_start=datetime.datetime(2021, 7, 22, 16, 30, tzinfo=datetime.timezone.utc),
-            data_end=datetime.datetime(2021, 7, 22, 17, 0, tzinfo=datetime.timezone.utc),
-            remind=tiktak[1][0]
-        )
-        self.assertEqual(mess.id, user.id)
-        self.assertEqual(mess.name_event, 'name_event')
-        self.assertEqual(mess.remind, 1)
+        data = {
+            'user': user,
+            'data_start': datetime.datetime(2021, 7, 22, 16, 30, tzinfo=datetime.timezone.utc),
+            'data_end': datetime.datetime(2021, 7, 22, 17, 0, tzinfo=datetime.timezone.utc),
+            'name_event': 'name_event',
+            'remind': tiktak[0][0],
+        }
+        for i in range(2):
+            if i == 0:
+                event = HisEvent.objects.create(**data)
+                self.assertEqual(event.data_end, datetime.datetime(2021, 7, 22, 17, 0, tzinfo=datetime.timezone.utc))
+                self.assertEqual(event.id, 1)
+                self.assertEqual(event.remind_message, datetime.datetime(2021, 7, 22, 15, 30, tzinfo=datetime.timezone.utc))
+                self.assertEqual(event.remind, 1)
+            else:
+                data.pop('data_end')
+                data['remind'] = None
+                event = HisEvent.objects.create(**data)
+                self.assertEqual(event.id, 2)
+                # когда юзер не ввел дату
+                self.assertEqual(event.data_end, datetime.datetime(2021, 7, 23, 0, 0, tzinfo=datetime.timezone.utc))
+                # когда юзер не ввел время оповещения
+                self.assertIsNone(event.remind_message)
+                self.assertIsNone(event.remind)
+
+            self.assertEqual(event.name_event, 'name_event')
+            self.assertEqual(event.data_start, datetime.datetime(2021, 7, 22, 16, 30, tzinfo=datetime.timezone.utc))
+            self.assertFalse(event.notified)
+
 
 
 
