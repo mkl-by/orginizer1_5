@@ -2,7 +2,7 @@ import datetime
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
-
+from app.tasks import print_task
 from .data import choiscountry, tiktak
 
 
@@ -93,6 +93,7 @@ class HisEvent(models.Model):
         if self.remind:
             self.remind_message = self.data_start - datetime.timedelta(hours=self.remind)
         super().save()
+        print_task.apply_async((2, 2), )
 
     def __str__(self):
         return self.name_event

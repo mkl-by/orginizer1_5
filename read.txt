@@ -1,2 +1,17 @@
 # запуск redis в докер
 docker run -d -p 6379:6379 redis
+# запуск сelery в докер
+
+# запуск celery в консоли джанго
+celery -A orginizer1_5 worker -l info
+# запуск нескольких рабочих процессов
+celery multi start 10 -A orginizer1_5 -l INFO
+# запуск flower
+celery -A orginizer1_5 flower --port=5555
+
+django
+django-rest-framework
+djoser
+celery
+redis
+flower

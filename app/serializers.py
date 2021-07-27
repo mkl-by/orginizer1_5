@@ -38,6 +38,7 @@ class HisEventSerializer(serializers.ModelSerializer):
         fields = ['user', 'name_event', 'remind', 'data_start', 'data_end']
 
     def validate(self, data):
+        # написать проверку то чтобы юзер не выбрал время оповщения remind раньше сегодняшней даты
         """
         Check that start is before finish.
         """
