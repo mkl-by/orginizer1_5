@@ -132,8 +132,8 @@ class AccountTests(APITestCase):
 
         data = {
             'user': user,
-            'data_start': datetime.datetime(2021, 7, 22, 16, 30, tzinfo=datetime.timezone.utc),
-            'data_end': datetime.datetime(2021, 7, 22, 17, 0, tzinfo=datetime.timezone.utc),
+            'data_start': timezone.now()+datetime.timedelta(hours=1, seconds=15),
+            'data_end': timezone.now()+datetime.timedelta(hours=3),
             'name_event': 'name_event',
             'remind': tiktak[0][0],
         }
@@ -141,22 +141,27 @@ class AccountTests(APITestCase):
         for i in range(2):
             if i == 0:
                 event = HisEvent.objects.create(**data)
-                self.assertEqual(event.data_end, datetime.datetime(2021, 7, 22, 17, 0, tzinfo=datetime.timezone.utc))
+                print(event.remind_message)
+                self.assertEqual(event.data_end, data['data_end'])
                 self.assertEqual(event.id, 1)
-                self.assertEqual(event.remind_message,
-                                 datetime.datetime(2021, 7, 22, 15, 30, tzinfo=datetime.timezone.utc))
+                self.assertEqual(event.remind_message, data['data_start']-datetime.timedelta(hours=data['remind']))
                 self.assertEqual(event.remind, 1)
+                self.assertFalse(event.notified)
             else:
+                # It is worked out an hour later
                 data.pop('data_end')
                 data['remind'] = None
                 event = HisEvent.objects.create(**data)
+                print(event.remind_message)
                 self.assertEqual(event.id, 2)
                 # user not add data_end
-                self.assertEqual(event.data_end, datetime.datetime(2021, 7, 23, 0, 0, tzinfo=datetime.timezone.utc))
+                self.assertEqual(event.data_end, (datetime.timedelta(days=1) + data['data_start']).
+                                 replace(hour=0, minute=0, second=0))
                 # user not add remind
-                self.assertIsNone(event.remind_message)
+
                 self.assertIsNone(event.remind)
+                self.assertFalse(event.notified)
 
             self.assertEqual(event.name_event, 'name_event')
-            self.assertEqual(event.data_start, datetime.datetime(2021, 7, 22, 16, 30, tzinfo=datetime.timezone.utc))
+            self.assertEqual(event.data_start, data['data_start'])
             self.assertFalse(event.notified)

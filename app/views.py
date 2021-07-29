@@ -15,5 +15,4 @@ class HisEventListApiView(ListCreateAPIView):
 
     def get_queryset(self):
         """return hisevent of user"""
-
         return HisEvent.objects.filter(user=self.request.user)

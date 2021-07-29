@@ -111,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Minsk'
 
 USE_I18N = True
 
@@ -143,7 +143,11 @@ DJOSER = {
     'SERIALIZERS': {},
 }
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# This backend is not intended for use in production –
+# it is provided as a convenience that can be used during development.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# The SMTP backend is the default configuration inherited by Django.
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # DEFAULT_FROM_EMAIL = 'askorbinkakislota@gmail.com'
 

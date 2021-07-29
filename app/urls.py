@@ -3,6 +3,7 @@ from django.urls import path
 from app.views import HisEventListApiView
 
 urlpatterns = [
+    #  add remind
     path('', HisEventListApiView.as_view(), name='create_event'),
     # path('', views.hotels_show, name='hotels_show'),
     # path('registration/', views.Registration.as_view(), name='registration'),

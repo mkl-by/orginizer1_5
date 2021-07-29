@@ -2,7 +2,7 @@ import datetime
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
-from app.tasks import print_task
+
 from .data import choiscountry, tiktak
 
 
@@ -78,7 +78,7 @@ class MyUser(AbstractBaseUser):
 
 class HisEvent(models.Model):
     """model user event"""
-    user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='user')
+    user = models.ForeignKey(MyUser, on_delete=models.CASCADE)
     name_event = models.CharField(max_length=250)
     remind = models.SmallIntegerField(null=True, blank=True, choices=tiktak)  # оповещение
     data_start = models.DateTimeField()
@@ -92,8 +92,16 @@ class HisEvent(models.Model):
             self.data_end = (datetime.timedelta(days=1) + self.data_start).replace(hour=0, minute=0, second=0)
         if self.remind:
             self.remind_message = self.data_start - datetime.timedelta(hours=self.remind)
+        else:
+            self.remind_message = self.data_start
         super().save()
-        print_task.apply_async((2, 2), )
+        from app.tasks import remind_about_event   # Tried from looping
+        remind_about_event.apply_async((self.id,), eta=self.remind_message, retry=True, retry_policy={
+            'max_retries': 2,
+            'interval_start': 0,
+            'interval_step': 0.2,
+            'interval_max': 0.2,
+        })
 
     def __str__(self):
         return self.name_event

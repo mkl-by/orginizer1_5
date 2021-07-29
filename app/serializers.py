@@ -1,3 +1,5 @@
+import datetime
+
 from django.utils import timezone
 from rest_framework import serializers
 from app.models import HisEvent
@@ -46,7 +48,10 @@ class HisEventSerializer(serializers.ModelSerializer):
             if data['data_start'] > data['data_end']:
                 raise serializers.ValidationError("finish must occur after start")
             if data['data_start'] < timezone.now():
-                raise serializers.ValidationError("Yesterday has already passed ")
+                raise serializers.ValidationError("Yesterday has already passed")
+            if data['remind']:
+                if data['data_start'] - datetime.timedelta(hours=data['remind']) < timezone.now():
+                    raise serializers.ValidationError("Reminder before the date")
         except KeyError:
             # if data['data_end'] KeyError
             return data
