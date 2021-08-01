@@ -1,11 +1,11 @@
 from django.urls import path
 
-from app.views import HisEventListApiView
+from app.views import HisEventListApiView, HisEventDayListApiView
 
 urlpatterns = [
     #  add remind
     path('', HisEventListApiView.as_view(), name='create_event'),
-    # path('', views.hotels_show, name='hotels_show'),
+    path('listofday/', HisEventDayListApiView.as_view(), name='list_of_day'),
     # path('registration/', views.Registration.as_view(), name='registration'),
     # path('loginuser/', views.LoginUser.as_view(), name='loginuser'),
     # path('logout/', views.logout_view, name='logout'),

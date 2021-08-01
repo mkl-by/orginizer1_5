@@ -28,9 +28,12 @@ def create(self, validated_data):
     return obj
 
 """
-
-
 class HisEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HisEvent
+        fields = '__all__'
+
+class HisEventCreateSerializer(serializers.ModelSerializer):
     # создаем невидимое поле в с юзером который зарегистрирован
     # при запросе данные юзера вводить не нужно
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())

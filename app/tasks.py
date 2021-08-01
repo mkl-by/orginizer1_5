@@ -2,6 +2,7 @@ from app.models import HisEvent
 import calendar
 from celery import shared_task
 from django.core.mail import send_mail
+from django.core.exceptions import ObjectDoesNotExist
 
 
 @shared_task
@@ -18,5 +19,8 @@ def remind_about_event(his_event_id):
             fail_silently=False,
         )
         event.notified = True
+    except ObjectDoesNotExist:  # if test works
+        return 'Run test'
     except Exception as exc:
         raise remind_about_event.retry(exc=exc, max_retries=3)
+

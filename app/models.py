@@ -96,6 +96,7 @@ class HisEvent(models.Model):
             self.remind_message = self.data_start
         super().save()
         from app.tasks import remind_about_event   # Tried from looping
+
         remind_about_event.apply_async((self.id,), eta=self.remind_message, retry=True, retry_policy={
             'max_retries': 2,
             'interval_start': 0,

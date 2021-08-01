@@ -126,6 +126,7 @@ class AccountTests(APITestCase):
     def test_create_his_event(self):
         """HisEvent models"""
         user = MyUser.objects.create_user('mmm@mmm.mm', choiscountry()[0][0], 'password')
+        self.assertEqual(user.id, 1)
         self.assertEqual(user.email, 'mmm@mmm.mm')
         self.assertEqual(user.country, 'Afghanistan')
         self.assertNotEqual(user.password, 'password')
@@ -141,7 +142,6 @@ class AccountTests(APITestCase):
         for i in range(2):
             if i == 0:
                 event = HisEvent.objects.create(**data)
-                print(event.remind_message)
                 self.assertEqual(event.data_end, data['data_end'])
                 self.assertEqual(event.id, 1)
                 self.assertEqual(event.remind_message, data['data_start']-datetime.timedelta(hours=data['remind']))
@@ -152,7 +152,6 @@ class AccountTests(APITestCase):
                 data.pop('data_end')
                 data['remind'] = None
                 event = HisEvent.objects.create(**data)
-                print(event.remind_message)
                 self.assertEqual(event.id, 2)
                 # user not add data_end
                 self.assertEqual(event.data_end, (datetime.timedelta(days=1) + data['data_start']).
