@@ -1,5 +1,8 @@
 from django.core.mail import send_mail
-
+from ics import Calendar, Event
+import requests
+import arrow
+from app.data import country
 
 def send(user_email):
     """отправка сообщения на почту"""
@@ -10,3 +13,7 @@ def send(user_email):
         [user_email],
         fail_silently=False
     )
+
+
+
+

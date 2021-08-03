@@ -106,3 +106,14 @@ class HisEvent(models.Model):
 
     def __str__(self):
         return self.name_event
+
+
+class HolidaysModel(models.Model):
+    country = models.CharField(max_length=70)
+    holidays = models.CharField(max_length=120)
+    datestartholiday = models.DateTimeField()
+    dateendholiday = models.DateTimeField()
+
+    def __str__(self):
+        return self.country
+

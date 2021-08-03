@@ -1,4 +1,5 @@
 amqp==5.0.6
+arrow==0.14.7
 asgiref==3.4.1
 billiard==3.6.4.0
 celery==5.1.2
@@ -20,6 +21,7 @@ djangorestframework-simplejwt==4.7.2
 djoser==2.1.0
 flower==1.0.0
 humanize==3.10.0
+ics==0.7
 idna==3.2
 itypes==1.2.0
 Jinja2==3.0.1
@@ -30,6 +32,7 @@ prometheus-client==0.11.0
 prompt-toolkit==3.0.19
 pycparser==2.20
 PyJWT==2.1.0
+python-dateutil==2.8.2
 python3-openid==3.2.0
 pytz==2021.1
 redis==3.5.3
@@ -39,6 +42,7 @@ six==1.16.0
 social-auth-app-django==4.0.0
 social-auth-core==4.1.0
 sqlparse==0.4.1
+TatSu==5.6.1
 tornado==6.1
 uritemplate==3.0.1
 urllib3==1.26.6
