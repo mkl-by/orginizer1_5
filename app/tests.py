@@ -1,15 +1,19 @@
 import datetime
 from json import dumps
+
+import arrow
+import requests
 from django.contrib.auth import get_user_model
 from django.core import mail
 
 from django.urls import reverse
 from django.utils import timezone
+from ics import Calendar
 
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
-from app.models import MyUser, HisEvent
+from app.models import MyUser, HisEvent, HolidaysModel
 from app.data import choiscountry, tiktak
 from django.conf import settings
 from app.utils import pars_mail
@@ -164,3 +168,25 @@ class AccountTests(APITestCase):
             self.assertEqual(event.name_event, 'name_event')
             self.assertEqual(event.data_start, data['data_start'])
             self.assertFalse(event.notified)
+
+    def test_create_country(self):
+        countryy = ['Afghanistan', 'Gibraltar', 'Saint Vincent and the Grenadines']
+        for con in countryy:
+            url = f"https://www.officeholidays.com/ics/ics_country.php?tbl_country={con}"
+            c = Calendar(requests.get(url).text)
+            data = list(c.timeline)
+            for i in data:
+                HolidaysModel.objects.update_or_create(
+                    country=con,
+                    holidays=i.name,
+                    datestartholiday=str(i.begin),
+                    dateendholiday=str(i.end)
+                    )
+
+                model = HolidaysModel.objects.last()
+                self.assertEqual(model.country, con)
+                self.assertTrue(model.holidays, i.name)
+                self.assertEqual(arrow.Arrow.fromdatetime(model.datestartholiday), i.begin)
+                self.assertEqual(arrow.Arrow.fromdatetime(model.dateendholiday), i.end)
+
+

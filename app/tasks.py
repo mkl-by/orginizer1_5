@@ -1,4 +1,4 @@
-from django.contrib.sites import requests
+import requests
 from ics import Calendar
 
 from app.models import HisEvent, HolidaysModel
@@ -37,6 +37,6 @@ def holidays():
             HolidaysModel.objects.update_or_create(
                     country=con,
                     holidays=i.name,
-                    datestartholiday=i.begin,
-                    dateendholiday=i.end
+                    datestartholiday=str(i.begin),
+                    dateendholiday=str(i.end)
                 )

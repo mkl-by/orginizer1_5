@@ -31,15 +31,15 @@ class HisEventDayListApiView(ListAPIView):
 
     def get(self, request, *args, **kwargs):
 
-        reg = re.compile(r"^(\d{4}(-?\d\d){2})[tT]?((\d\d:?){1,2}(\d\d)?(.\d{3})?([zZ]|[+-](\d\d):?(\d\d)))?$")
+        # reg = re.compile(r"^(\d{4}(-?\d\d){2})[tT]?((\d\d:?){1,2}(\d\d)?(.\d{3})?([zZ]|[+-](\d\d):?(\d\d)))?$")
         string = f'{kwargs["year"]}-{kwargs["month"]}-{kwargs["day"]}'
-        ymd = reg.search(string)
-        if not ymd:
-            return Response({
-                    "message": f"Params date url .../year/month/day value error."
-            },
-                    status=status.HTTP_400_BAD_REQUEST
-            )
+        # ymd = reg.search(string)
+        # if not ymd:
+        #     return Response({
+        #             "message": f"Params date url .../year/month/day value error."
+        #     },
+        #             status=status.HTTP_400_BAD_REQUEST
+        #     )
 
         try:
             ymd = datetime.datetime.strptime(string, '%Y-%m-%d')
