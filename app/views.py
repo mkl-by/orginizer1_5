@@ -8,9 +8,16 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from app.models import HisEvent
+from app.models import HisEvent, HolidaysModel, MyUser
 from app.serializers import HisEventCreateSerializer, HisEventSerializer
-from rest_framework.generics import ListCreateAPIView, ListAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView, GenericAPIView
+
+from app.service import creation_date
+
+
+class MixinView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
 
 class HisEventListApiView(ListCreateAPIView):
@@ -27,7 +34,6 @@ class HisEventDayListApiView(ListAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
     serializer_class = HisEventSerializer
-    #serializer_class = HisEventCreateSerializer
 
     def get(self, request, *args, **kwargs):
 
@@ -49,7 +55,7 @@ class HisEventDayListApiView(ListAPIView):
             },
                     status=status.HTTP_400_BAD_REQUEST
             )
-        print(ymd)
+
         query_set = HisEvent.objects.filter(
             user=self.request.user,
             notified=False,
@@ -60,5 +66,32 @@ class HisEventDayListApiView(ListAPIView):
         serializer = HisEventSerializer(query_set, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# class HolidayListApi(ListAPIView, MixinView):
+#     serializer_class = HisEventCreateSerializer
+#     def get(self, request, *args, **kwargs):
+#
+#         string = f'{kwargs["year"]}-{kwargs["month"]}-01'
+#
+#         ymd = creation_date(string)
+#
+#         country = MyUser.objects.get(email=self.request.user).country
+#
+#         query_set = HisEvent.objects.filter(
+#             user=self.request.user,
+#             remind_message__year=ymd.year,
+#             remind_message__month=ymd.month,
+#             remind_message__day=ymd.day).order_by('remind_message')
+#
+#         serializer = HisEventSerializer(query_set, many=True)
+#
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+#
+
+
+
+
+
 
 

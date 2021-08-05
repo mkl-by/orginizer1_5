@@ -170,6 +170,7 @@ class AccountTests(APITestCase):
             self.assertFalse(event.notified)
 
     def test_create_country(self):
+        """HolidaysModel model"""
         countryy = ['Afghanistan', 'Gibraltar', 'Saint Vincent and the Grenadines']
         for con in countryy:
             url = f"https://www.officeholidays.com/ics/ics_country.php?tbl_country={con}"

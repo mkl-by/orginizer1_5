@@ -176,8 +176,8 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULE = {
     'add-models-holidays': {
-        'task': 'app.tasks.holidays',
-        #'schedule': crontab(hour=0, minute=0, day_of_month='1', month_of_year='*/3'),
-        'schedule': crontab(minute='*/10'),
+        'task': 'app.tasks.holiday',
+        'schedule': crontab(hour=0, minute=0, day_of_month='1', month_of_year='*/3'),  # раз в квартал
+        # 'schedule': crontab(minute='*/7'),
     },
 }

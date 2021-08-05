@@ -12,6 +12,9 @@ docker run -d -p=49555:5555 --rm  -e CELERY_BROKER_URL=redis://0.0.0.0:6379/0 mh
 
 docker build -t "flower" .
 docker run -d -p=49555:5555 --rm --name flower -e CELERY_BROKER_URL=redis://0.0.0.0:6379/0 flower flower --port=5555
+# заполнение таблицы с праздниками
+python manage.py addholidays
+
 
 django
 django-rest-framework

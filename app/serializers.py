@@ -2,7 +2,7 @@ import datetime
 
 from django.utils import timezone
 from rest_framework import serializers
-from app.models import HisEvent
+from app.models import HisEvent, HolidaysModel
 
 """
 ПАМЯТКА джуна:
@@ -28,10 +28,19 @@ def create(self, validated_data):
     return obj
 
 """
+
+
+class HolidaysSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HolidaysModel
+        fields = ['holidays', 'datestartholiday', ' dateendholiday']
+
+
 class HisEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = HisEvent
         fields = '__all__'
+
 
 class HisEventCreateSerializer(serializers.ModelSerializer):
     # создаем невидимое поле в с юзером который зарегистрирован
@@ -43,7 +52,6 @@ class HisEventCreateSerializer(serializers.ModelSerializer):
         fields = ['user', 'name_event', 'remind', 'data_start', 'data_end']
 
     def validate(self, data):
-        # написать проверку то чтобы юзер не выбрал время оповщения remind раньше сегодняшней даты
         """
         Check that start is before finish.
         """
