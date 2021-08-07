@@ -33,7 +33,7 @@ def create(self, validated_data):
 class HolidaysSerializer(serializers.ModelSerializer):
     class Meta:
         model = HolidaysModel
-        fields = ['holidays', 'datestartholiday', ' dateendholiday']
+        fields = ['holidays', 'datestartholiday', 'dateendholiday']
 
 
 class HisEventSerializer(serializers.ModelSerializer):

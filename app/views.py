@@ -1,15 +1,10 @@
-import datetime
-import re
-
-from django.http import HttpResponse
-from django.utils import timezone
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from app.models import HisEvent, HolidaysModel, MyUser
-from app.serializers import HisEventCreateSerializer, HisEventSerializer
+from app.serializers import HisEventCreateSerializer, HisEventSerializer, HolidaysSerializer
 from rest_framework.generics import ListCreateAPIView, ListAPIView, GenericAPIView
 
 from app.service import creation_date
@@ -20,9 +15,8 @@ class MixinView(GenericAPIView):
     authentication_classes = [TokenAuthentication]
 
 
-class HisEventListApiView(ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
+class HisEventListApiView(ListCreateAPIView, MixinView):
+
     serializer_class = HisEventCreateSerializer
 
     def get_queryset(self):
@@ -30,9 +24,8 @@ class HisEventListApiView(ListCreateAPIView):
         return HisEvent.objects.filter(user=self.request.user)
 
 
-class HisEventDayListApiView(ListAPIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
+class HisEventDayListApiView(ListAPIView, MixinView):
+    """" Returns user events in the selected date (one day)"""
     serializer_class = HisEventSerializer
 
     def get(self, request, *args, **kwargs):
@@ -46,48 +39,60 @@ class HisEventDayListApiView(ListAPIView):
         #     },
         #             status=status.HTTP_400_BAD_REQUEST
         #     )
-
-        try:
-            ymd = datetime.datetime.strptime(string, '%Y-%m-%d')
-        except ValueError:
-            return Response({
-                     "message": f"Date parameters in url .../year/month/day value error."
-            },
-                    status=status.HTTP_400_BAD_REQUEST
-            )
+        ymd = creation_date(string)
 
         query_set = HisEvent.objects.filter(
-            user=self.request.user,
-            notified=False,
-            remind_message__year=ymd.year,
-            remind_message__month=ymd.month,
-            remind_message__day=ymd.day).order_by('remind_message')
+                                user=self.request.user,
+                                notified=False,
+                                remind_message__year=ymd.year,
+                                remind_message__month=ymd.month,
+                                remind_message__day=ymd.day).order_by('remind_message')
+
+        if not query_set:
+            return Response({
+                "message": f"{ymd.day}.{ymd.month}.{ymd.year} no events"
+            },
+                status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION
+            )
 
         serializer = HisEventSerializer(query_set, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# class HolidayListApi(ListAPIView, MixinView):
-#     serializer_class = HisEventCreateSerializer
-#     def get(self, request, *args, **kwargs):
-#
-#         string = f'{kwargs["year"]}-{kwargs["month"]}-01'
-#
-#         ymd = creation_date(string)
-#
-#         country = MyUser.objects.get(email=self.request.user).country
-#
-#         query_set = HisEvent.objects.filter(
-#             user=self.request.user,
-#             remind_message__year=ymd.year,
-#             remind_message__month=ymd.month,
-#             remind_message__day=ymd.day).order_by('remind_message')
-#
-#         serializer = HisEventSerializer(query_set, many=True)
-#
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-#
+class HolidayListApi(ListAPIView, MixinView):
+    """Returns holidays for the month"""
+
+    serializer_class = HolidaysSerializer
+
+    def get(self, request, *args, **kwargs):
+        country = MyUser.objects.get(email=self.request.user).country
+        if not country:
+            return Response({
+                "message": f"We do not know where you come from, you did not indicate the country at registration."
+            },
+                status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
+
+        string = f'{kwargs["year"]}-{kwargs["month"]}-01'
+        ymd = creation_date(string)
+
+        query_set = HolidaysModel.objects.filter(
+                                country=country,
+                                datestartholiday__year=ymd.year,
+                                datestartholiday__month=ymd.month,
+                                ).order_by('holidays')
+
+        if not query_set:
+            return Response({
+                "message": "In the database there is no data on holidays on your request "
+            },
+                status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION
+            )
+
+        serializer = HolidaysSerializer(query_set, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 
