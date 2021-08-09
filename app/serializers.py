@@ -4,31 +4,6 @@ from django.utils import timezone
 from rest_framework import serializers
 from app.models import HisEvent, HolidaysModel
 
-"""
-ПАМЯТКА джуна:
-Добавление кастомного поля в сериализер
-MySerializer(serializers.HyperlinkedModelSerializer):
-user = serializers.ReadOnlyField()
-class Meta:
-    model = My
-    fields = ('user','title','description')
-
-Когда вы вызываете сериализатор, вы просто добавляете текущего пользователя в сериализатор, 
-либо в views.py или в методе создания сериализатора.
-
-1. В views.py
-
-serializer.save(user=request.user)
-
-2. В сериализаторе создайте метод create
-
-def create(self, validated_data):
-    validated_data['user'] = request.user.id
-    obj = ExampleModel.objects.create(**validated_data)
-    return obj
-
-"""
-
 
 class HolidaysSerializer(serializers.ModelSerializer):
     class Meta:

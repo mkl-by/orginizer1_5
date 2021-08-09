@@ -94,6 +94,30 @@ class HolidayListApi(ListAPIView, MixinView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class EventMonthListApi(ListAPIView, MixinView):
+    """Returns all events for the month """
+
+    def get(self, request, *args, **kwargs):
+
+        string = f'{kwargs["year"]}-{kwargs["month"]}-01'
+        ymd = creation_date(string)
+
+        try:
+            query = HisEvent.objects.filter(
+                remind_message__month=ymd.month,
+                user=self.request.user)
+
+            if not query:
+                return Response({"message": f"no data"}, status=status.HTTP_204_NO_CONTENT)
+            else:
+                dict_event = {}
+                for dd in query.dates('remind_message', 'day'):
+                    list_event_day = list(query.filter(remind_message__day=dd.day).values_list('name_event', flat=True))
+                    dict_event[str(dd.day)] = list_event_day
+        except ValueError:
+            return Response({"message": f"no data"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(dict_event, status=status.HTTP_200_OK)
 
 
 
