@@ -1,4 +1,5 @@
 import datetime
+import json
 from json import dumps
 
 import arrow
@@ -11,7 +12,7 @@ from django.utils import timezone
 from ics import Calendar
 
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient, RequestsClient
 from rest_framework.authtoken.models import Token
 from app.models import MyUser, HisEvent, HolidaysModel
 from app.data import choiscountry, tiktak
@@ -25,19 +26,26 @@ class AccountTests(APITestCase):
     # settings.EMAIL_FILE_PATH = settings.BASE_DIR / 'mail_log_file'
 
     settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+    datas = {
+        'data_start': timezone.now()+datetime.timedelta(hours=1, seconds=15),
+        'data_end': timezone.now()+datetime.timedelta(hours=3),
+        'name_event': 'name_event',
+        'remind': tiktak[0][0],
+    }
+    user_data = {
+        'email': 'test@test.test',
+        'password': 'useruser',
+        'country': choiscountry()[0][0],
+    }
 
     def test_register(self):
         """
         Ensure we can create a new CustomUser object and Token object
         """
         # GOOD CASE
-        data = {
-            'email': 'test@test.test',
-            'password': 'useruser',
-            'country': choiscountry()[0][0],
-        }
         # register user
-        response = self.client.post('/auth/users/', data=dumps(data), content_type="application/json")
+        response = self.client.post('/auth/users/', data=dumps(self.user_data), content_type="application/json")
+
         # check status msg 201
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, msg=response.data)
         self.assertEqual(response.data['email'], 'test@test.test')
@@ -47,7 +55,7 @@ class AccountTests(APITestCase):
         self.assertEqual(response.data['email'], user.email)
         self.assertEqual(response.data['country'], user.country)
 
-        # confirmation of activation by email "активируем юзера по из почты"
+        # confirmation of activation by email "активируем юзера из почты"
         # проверили, что отправили одно сообщение
         self.assertEqual(len(mail.outbox), 1)
 
@@ -67,16 +75,12 @@ class AccountTests(APITestCase):
         self.assertEqual(response_activate.data, None)
 
         # login user and return token user "логинимся и получаем в ответ токен usera"
-        data_user = {
-            'email': 'test@test.test',
-            'password': 'useruser',
-        }
 
-        response_login = self.client.post(
-            '/auth/token/login/',
-            data=dumps(data_user),
-            content_type="application/json"
-        )
+        data_user = self.user_data.copy()
+        data_user.pop('country')
+
+        response_login = self.client.post('/auth/token/login/', data=dumps(data_user),
+                                                                content_type="application/json")
 
         self.assertEqual(response_login.status_code, status.HTTP_200_OK, msg=response_login.data)
 
@@ -87,28 +91,21 @@ class AccountTests(APITestCase):
         )
 
         # BAD CASE
-        data['email'] = 'bad_emaild'
-        response = self.client.post('auth/users/', data=dumps(data), content_type="application/json")
+        self.user_data['email'] = 'bad_emaild'
+        response = self.client.post('auth/users/', data=dumps(self.user_data), content_type="application/json")
         # check status 400
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         # check user obj isn't created
-        self.assertEqual(MyUser.objects.filter(email=data['email']).exists(), False)
+        self.assertEqual(MyUser.objects.filter(email=self.user_data['email']).exists(), False)
 
     def test_get_token(self):
         """ Ensure we can get or create token """
         user_model = get_user_model()   # CustomUser model
-        user = user_model.objects.create_user(
-            email='test@test.test',
-            password='password',
-            country=choiscountry()[0][0]
-        )
+        user = user_model.objects.create_user(**self.user_data)
         token = Token.objects.create(user=user)
         # GOOD CASE
-        data = {
-            'email': 'test@test.test',
-            'password': 'password',
-            # 'country': choiscountry()[0][0]
-        }
+        data = self.user_data.copy()
+        data.pop('country')
         response = self.client.post('/auth/token/login/', data=dumps(data), content_type="application/json")
         # check get token
         self.assertEqual(response.status_code, status.HTTP_200_OK, msg=response.data)
@@ -183,11 +180,37 @@ class AccountTests(APITestCase):
                     datestartholiday=str(i.begin),
                     dateendholiday=str(i.end)
                     )
-
                 model = HolidaysModel.objects.last()
                 self.assertEqual(model.country, con)
                 self.assertTrue(model.holidays, i.name)
                 self.assertEqual(arrow.Arrow.fromdatetime(model.datestartholiday), i.begin)
                 self.assertEqual(arrow.Arrow.fromdatetime(model.dateendholiday), i.end)
 
+    def test_remind_messages(self):
+        """test all events for the month"""
+        user_model = get_user_model()   # CustomUser model
+        user = user_model.objects.create_user(**self.user_data)
+        dat = self.datas.copy()
+        dat['user'] = user
 
+        data = self.user_data.copy()
+        data.pop('country')
+
+        HisEvent.objects.create(**dat)
+
+        self.client.post('/auth/token/login/', data=dumps(data), content_type="application/json")
+        token = Token.objects.first()
+        clients = RequestsClient()
+        response1 = clients.get('http://testserver/eventmonth/2021/08/',
+                                headers={'Authorization': 'Token ' + token.key})
+
+        query = HisEvent.objects.filter(
+            remind_message__month=timezone.now().month,
+            user=user)
+
+        dict_event = {}
+        for dd in query.dates('remind_message', 'day'):
+            list_event_day = list(query.filter(remind_message__day=dd.day).values_list('name_event', flat=True))
+            dict_event[str(dd.day)] = list_event_day
+
+        self.assertEqual(eval(json.loads(response1.text)), dict_event)

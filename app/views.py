@@ -1,3 +1,5 @@
+import json
+
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -95,7 +97,7 @@ class HolidayListApi(ListAPIView, MixinView):
 
 
 class EventMonthListApi(ListAPIView, MixinView):
-    """Returns all events for the month """
+    """Returns all events for the month"""
 
     def get(self, request, *args, **kwargs):
 
@@ -117,7 +119,7 @@ class EventMonthListApi(ListAPIView, MixinView):
         except ValueError:
             return Response({"message": f"no data"}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(dict_event, status=status.HTTP_200_OK)
+        return Response(json.dumps(dict_event), status=status.HTTP_200_OK)
 
 
 
