@@ -3,7 +3,7 @@ import datetime
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 
-from .data import choiscountry, tiktak
+from app.data import choiscountry, tiktak
 
 
 class MyUserManager(BaseUserManager):
@@ -116,4 +116,3 @@ class HolidaysModel(models.Model):
 
     def __str__(self):
         return self.country
-

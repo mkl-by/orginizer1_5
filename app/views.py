@@ -120,9 +120,3 @@ class EventMonthListApi(ListAPIView, MixinView):
             return Response({"message": f"no data"}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(json.dumps(dict_event), status=status.HTTP_200_OK)
-
-
-
-
-
-

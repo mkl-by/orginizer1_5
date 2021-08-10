@@ -7,16 +7,17 @@ import requests
 from django.contrib.auth import get_user_model
 from django.core import mail
 
-from django.urls import reverse
 from django.utils import timezone
 from ics import Calendar
 
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient, RequestsClient
+from rest_framework.test import APITestCase, RequestsClient
 from rest_framework.authtoken.models import Token
 from app.models import MyUser, HisEvent, HolidaysModel
 from app.data import choiscountry, tiktak
 from django.conf import settings
+
+from app.serializers import HolidaysSerializer
 from app.utils import pars_mail
 
 
@@ -79,8 +80,7 @@ class AccountTests(APITestCase):
         data_user = self.user_data.copy()
         data_user.pop('country')
 
-        response_login = self.client.post('/auth/token/login/', data=dumps(data_user),
-                                                                content_type="application/json")
+        response_login = self.client.post('/auth/token/login/', data=dumps(data_user), content_type="application/json")
 
         self.assertEqual(response_login.status_code, status.HTTP_200_OK, msg=response_login.data)
 
@@ -173,6 +173,7 @@ class AccountTests(APITestCase):
             url = f"https://www.officeholidays.com/ics/ics_country.php?tbl_country={con}"
             c = Calendar(requests.get(url).text)
             data = list(c.timeline)
+
             for i in data:
                 HolidaysModel.objects.update_or_create(
                     country=con,
@@ -185,6 +186,34 @@ class AccountTests(APITestCase):
                 self.assertTrue(model.holidays, i.name)
                 self.assertEqual(arrow.Arrow.fromdatetime(model.datestartholiday), i.begin)
                 self.assertEqual(arrow.Arrow.fromdatetime(model.dateendholiday), i.end)
+
+        user_model = get_user_model()   # CustomUser model
+        user = user_model.objects.create_user(**self.user_data)
+        dat = self.datas.copy()
+        dat['user'] = user
+
+        data = self.user_data.copy()
+        data.pop('country')
+
+        self.client.post('/auth/token/login/', data=dumps(data), content_type="application/json")
+        token = Token.objects.first()
+
+        clients = RequestsClient()
+
+        """HolidayListApi"""
+        dd = timezone.now()
+
+        response1 = clients.get(f'http://testserver/holidays/{dd.year}/{dd.month}/',
+                                headers={'Authorization': 'Token ' + token.key})
+
+        holidays = HolidaysModel.objects.filter(
+            country=countryy[0],
+            datestartholiday__month=dd.month,
+            dateendholiday__year=dd.year
+                       )
+        serializer = HolidaysSerializer(holidays, many=True)
+
+        self.assertEqual(response1.text, json.dumps(serializer.data))
 
     def test_remind_messages(self):
         """test all events for the month"""
@@ -201,7 +230,11 @@ class AccountTests(APITestCase):
         self.client.post('/auth/token/login/', data=dumps(data), content_type="application/json")
         token = Token.objects.first()
         clients = RequestsClient()
-        response1 = clients.get('http://testserver/eventmonth/2021/08/',
+
+        """EventMonthListApi"""
+        dd = timezone.now()
+
+        response1 = clients.get(f'http://testserver/eventmonth/{dd.year}/{dd.month}/',
                                 headers={'Authorization': 'Token ' + token.key})
 
         query = HisEvent.objects.filter(

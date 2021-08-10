@@ -8,4 +8,4 @@ urlpatterns = [
     path('listofday/<str:year>/<str:month>/<str:day>', HisEventDayListApiView.as_view(), name='list_of_day'),
     path('holidays/<str:year>/<str:month>/', HolidayListApi.as_view(), name='holidayapi'),
     path('eventmonth/<str:year>/<str:month>/', EventMonthListApi.as_view(), name='loginuser'),
-    ]
+]

@@ -149,7 +149,7 @@ DJOSER = {
 # it is provided as a convenience that can be used during development.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # The SMTP backend is the default configuration inherited by Django.
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # DEFAULT_FROM_EMAIL = 'askorbinkakislota@gmail.com'
 

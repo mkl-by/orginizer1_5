@@ -26,6 +26,7 @@ def remind_about_event(his_event_id):
     except Exception as exc:
         raise remind_about_event.retry(exc=exc, max_retries=3)
 
+
 @shared_task
 def holiday():
     """Run once a quarter """

@@ -1,7 +1,7 @@
 import datetime
 
 
-from ics import Calendar, Event
+from ics import Calendar
 import requests
 from rest_framework import status
 from rest_framework.response import Response
