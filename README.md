@@ -1,4 +1,8 @@
-# orginizer1_5
+# orginizer
+
+
+Back-end (REST API) for application with authorization, the ability to add custom events and notifications about upcoming events and holidays in user's country by e-mail. Periodic update of the list of holidays.
+
 
 Supported authentication backends
 
