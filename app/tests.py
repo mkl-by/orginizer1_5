@@ -213,7 +213,7 @@ class AccountTests(APITestCase):
                        )
         serializer = HolidaysSerializer(holidays, many=True)
 
-        self.assertEqual(response1.text, json.dumps(serializer.data))
+        self.assertEqual(eval(response1.text), eval(json.dumps(serializer.data)))
 
     def test_remind_messages(self):
         """test all events for the month"""
