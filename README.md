@@ -156,7 +156,7 @@ User logout
    
    Place the project in the folder orginizer
    
-   run docker-compose up --build
+    run docker-compose up --build
     
    
  
