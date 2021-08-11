@@ -46,7 +46,16 @@ Available endpoints
 Before the first server start, execute the command
     
     python3 manage.py addholidays
-    
+next
+
+    docker run -d -p 6379:6379 redis
+    python3 manage.py makemigrations
+    python3 manage.py migrate
+    python3 runserver
+    celery -A orginizer1_5 worker -l info
+    celery -A orginizer1_5 beat -l info
+    celery -A orginizer1_5 flower --port=5555
+
 User authentication 
     
         post: ../auth/users/
@@ -126,3 +135,30 @@ User logout
 ###### User list of events for the month  
     get: ../eventmonth/<YYYY>/<dd>/
     example: http://127.0.0.1:8000/eventmonth/2021/08
+    
+    
+ # Start from Doker File
+ 
+ add to settings for postgres
+    
+   DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get("POSTGRES_DB"),
+        'PASSWORD': os.environ.get("POSTGRES_PASSWORD"), 
+        'USER': os.environ.get("POSTGRES_USER"), 
+        'HOST': 'db', 
+        'PORT': 5432
+        }  
+    }
+   
+   Disable debug 
+   
+   Place the project in the folder orginizer
+   
+   run docker-compose up --build
+    
+   
+ 
+            
+   
