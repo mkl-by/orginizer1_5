@@ -43,6 +43,9 @@ Available endpoints
     /token/login/ (Token Based Authentication)
     /token/logout/ (Token Based Authentication)
 
+Before the first server start, execute the command:
+    python3 manage.py addholidays
+    
 User authentication 
     
         post: ../auth/users/
