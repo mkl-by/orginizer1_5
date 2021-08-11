@@ -141,7 +141,7 @@ User logout
  
  add to settings for postgres
     
-   DATABASES = {
+    DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get("POSTGRES_DB"),
