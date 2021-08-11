@@ -1,0 +1,60 @@
+version: "3"
+
+services:
+  web: # наименование сервиса
+    build:
+      context: .   # откуда берем контекст (папка с проектом) находись тут и отсюда работай
+      dockerfile: Dockerfile # докерфайл с помощью которого запускаем, файл уже может называться подругому
+    container_name: organizer1
+    volumes: 
+      - ./organizer:/src # подключаем папку с проектом из:в докер
+    ports:
+      - "8000:8000" # из: в докер
+    depends_on: #  прежде чем запуститься ждем запуска редиса и базы данных
+      - db  #  наименование базы данных в данном случае постгресс 
+      - redis #  наименование сервиса, в данном случае редис
+    command: sh -c 'python3 manage.py makemigrations&
+                    python3 manage.py migrate&
+                    python3 manage.py addholidays&
+                    python3 manage.py runserver 0.0.0.0:8000' # запускаем сервер
+    env_file:
+      - db_keys.txt
+  
+  db: # cоздадим новый контейнер дб
+    image: postgres:latest # скачиваем последнюю версию с докерхаба
+    container_name: my_db # обзываем my_db
+    env_file:
+      - db_keys.txt # берем данные из файла db_keys, лежит в . где docker-compose.yaml и делаем пароль, юзера для постгресс
+   
+  redis:
+    image: redis:latest
+    container_name: redis_db
+
+  celery: 
+    build:
+      context: .
+      dockerfile: Dockerfile  
+    container_name: celery
+    volumes:
+      - ./organizer:/src 
+    env_file:
+      - db_keys.txt
+    depends_on:
+      - redis  
+    command: sh -c 'celery -A orginizer1_5 worker -l info&
+                    celery -A orginizer1_5 beat -l info'
+
+  flower:  
+    image: mher/flower
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - FLOWER_PORT=8888
+    ports:  
+    - 8888:8888
+
+  adminer: 
+    image: adminer:latest 
+    container_name: adminersel
+    ports:
+      - "8080:8080"
+
