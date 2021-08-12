@@ -51,7 +51,7 @@ next
     docker run -d -p 6379:6379 redis
     python3 manage.py makemigrations
     python3 manage.py migrate
-    python3 runserver
+    python3 manage.py runserver
     celery -A orginizer1_5 worker -l info
     celery -A orginizer1_5 beat -l info
     celery -A orginizer1_5 flower --port=5555
