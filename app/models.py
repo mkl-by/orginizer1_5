@@ -109,7 +109,7 @@ class HisEvent(models.Model):
 
 
 class HolidaysModel(models.Model):
-    country = models.CharField(max_length=70)
+    country = models.CharField(max_length=70) #Можно сделать foreikey на country usera тем самым уменьшив количество информации в базе
     holidays = models.CharField(max_length=120)
     datestartholiday = models.DateTimeField()
     dateendholiday = models.DateTimeField()
